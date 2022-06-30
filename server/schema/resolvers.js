@@ -1,11 +1,23 @@
 const {UserList, MovieList} = require("../FakeData");
 const _ = require("lodash");
 
+
+/*
+
+query -> users -> favoriteMovies
+
+"parent" returns the previous level value
+
+*/
+
 const resolvers = {
     Query:{
         //User Resolvers
-        users:()=>{
-            return UserList;
+        users:(parent, args, context, info)=>{
+            // console.log(context);
+            console.log(info)
+            if(UserList) return {users:UserList};
+            return {message: "Yo, there was an error"}
         },
         user:(parent , args) =>{
             const id = args.id;
@@ -25,7 +37,8 @@ const resolvers = {
     },
     
     User:{
-        favoriteMovies: () => {
+        favoriteMovies: (parent) => {
+            // console.log(parent)
             return _.filter(
               MovieList,
               (movie) =>
@@ -55,7 +68,7 @@ const resolvers = {
             });
             return userUpdated;
         },
-        deleteUser:(parent , args)=>{
+        deleteUser:(parent , args, context , info)=>{
             const id = args.id;
             _.remove(UserList, (user)=>{
                 user.id === Number(id)
@@ -63,6 +76,20 @@ const resolvers = {
             return null;
         }
 
+    },
+
+    UsersResult:{
+        __resolveType(obj){
+            if(obj.users){
+                return "UsersSuccessfulResult";
+            }
+
+            if(obj.message){
+                return "UsersErrorResult";
+            }
+
+            return null;
+        }
     }
 };
 
